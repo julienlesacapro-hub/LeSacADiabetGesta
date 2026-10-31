@@ -1,0 +1,25 @@
+{
+  "name": "LeSacADiabetGesta — Diabète gestationnel",
+  "short_name": "DiabetGesta",
+  "description": "Comprendre le diabète gestationnel, préparer le dépistage et suivre ses glycémies. Données conservées sur le téléphone.",
+  "lang": "fr",
+  "dir": "ltr",
+  "start_url": "./#/accueil",
+  "scope": "./",
+  "id": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#faf6f2",
+  "theme_color": "#6b4a7e",
+  "categories": ["health", "medical", "lifestyle"],
+  "icons": [
+    { "src": "assets/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "assets/icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
+    { "src": "assets/icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ],
+  "shortcuts": [
+    { "name": "Ajouter une glycémie", "short_name": "Ajouter", "url": "./#/saisie", "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "Carnet", "url": "./#/carnet", "icons": [{ "src": "assets/icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}
