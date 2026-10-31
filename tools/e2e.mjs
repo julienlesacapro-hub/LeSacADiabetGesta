@@ -183,6 +183,108 @@ await page.goto(`${base}#/carnet`);
 await page.click('[data-mode="charts"]');
 await snap('courbes-sombre');
 
+// ---------------------------------------------------------------------------
+// Installabilité (manifeste + service worker), vérifiée par Chromium lui-même.
+// ---------------------------------------------------------------------------
+await page.emulateMedia({ colorScheme: 'light' });
+await page.goto(`${base}#/accueil`);
+await page.evaluate(() => navigator.serviceWorker.ready);
+await page.reload();
+await page.waitForSelector('.hello');
+const cdp = await context.newCDPSession(page);
+const manifestInfo = await cdp.send('Page.getAppManifest');
+assert.deepEqual(manifestInfo.errors, [], `erreurs de manifeste : ${JSON.stringify(manifestInfo.errors)}`);
+const { installabilityErrors } = await cdp.send('Page.getInstallabilityErrors');
+assert.deepEqual(installabilityErrors, [], `installabilité : ${JSON.stringify(installabilityErrors)}`);
+const appId = await cdp.send('Page.getAppId').catch(() => ({}));
+console.log(`Installable ✓ (identifiant calculé : ${appId.appId || 'n/d'})`);
+await page.goto(`${base}#/installer`);
+await page.waitForSelector('.install-steps');
+await snap('installer');
+
+// ---------------------------------------------------------------------------
+// Clavier virtuel : la fenêtre de saisie doit rester visible au-dessus du clavier.
+// ---------------------------------------------------------------------------
+const KB = 336; // hauteur d'un clavier numérique iPhone avec sa barre d'outils
+async function checkEntryVisible(p, visibleBottom, label) {
+  const r = await p.evaluate(() => {
+    const box = (sel) => { const e = document.querySelector(sel); if (!e) return null; const b = e.getBoundingClientRect(); return { top: b.top, bottom: b.bottom }; };
+    return { title: box('.sheet-title'), moments: box('.moment-grid'), input: box('#glyc-value'), status: box('[data-status]'), units: box('.unit-switch'), save: box('[data-save]'), kb: document.body.classList.contains('kb-open') };
+  });
+  // Rien ne doit être sous le clavier, ni caché derrière la barre « Enregistrer ».
+  const footerTop = await p.evaluate(() => document.querySelector('.sheet-actions').getBoundingClientRect().top);
+  for (const k of ['title', 'moments', 'input', 'status', 'units']) {
+    assert.ok(r[k].top >= 0 && r[k].bottom <= Math.min(visibleBottom, footerTop) + 1, `${label} : « ${k} » masqué (${JSON.stringify(r[k])}, zone visible ≤ ${Math.min(visibleBottom, footerTop)})`);
+  }
+  assert.ok(r.save.top >= 0 && r.save.bottom <= visibleBottom + 1, `${label} : bouton Enregistrer masqué (${JSON.stringify(r.save)})`);
+  const clipped = await p.evaluate(() => [...document.querySelectorAll('.moment-btn span')].filter((s) => s.scrollWidth > s.clientWidth + 1).map((s) => s.textContent));
+  assert.deepEqual(clipped, [], `${label} : libellés de moment tronqués`);
+  assert.ok(r.kb, `${label} : mode clavier non détecté`);
+}
+
+// iPhone : le clavier réduit la zone visible (Visual Viewport) sans redimensionner la page.
+const iosCtx = await browser.newContext({ ...devices['iPhone 13'], locale: 'fr-FR' });
+await iosCtx.addInitScript(() => {
+  const fake = new EventTarget();
+  let hidden = 0;
+  Object.defineProperty(fake, 'height', { get: () => window.innerHeight - hidden });
+  Object.defineProperty(fake, 'width', { get: () => window.innerWidth });
+  Object.defineProperty(fake, 'offsetTop', { get: () => 0 });
+  Object.defineProperty(window, 'visualViewport', { value: fake, configurable: true });
+  window.__keyboard = (px) => { hidden = px; fake.dispatchEvent(new Event('resize')); };
+});
+const ios = await iosCtx.newPage();
+ios.on('pageerror', (e) => errors.push(`ios pageerror: ${e.message}`));
+await ios.goto(base);
+await ios.evaluate(() => localStorage.setItem('lesacadiabetgesta:v1', JSON.stringify({ version: 1, onboarded: true, profile: { status: 'gdm', unit: 'g/L', treatment: 'insulin' }, readings: [], tests: [] })));
+await ios.reload();
+await ios.waitForSelector('.hello');
+await ios.click('[data-fab]');
+await ios.waitForSelector('#glyc-value:focus');
+await ios.evaluate((px) => window.__keyboard(px), KB);
+await ios.waitForTimeout(400);
+await ios.keyboard.type('1,32');
+const iosVisible = devices['iPhone 13'].viewport.height - KB;
+await checkEntryVisible(ios, iosVisible, 'iPhone');
+await ios.evaluate((px) => {
+  const kb = document.createElement('div');
+  kb.id = 'fake-kb';
+  kb.style.cssText = `position:fixed;left:0;right:0;bottom:0;height:${px}px;background:repeating-linear-gradient(0deg,#c9ccd3,#c9ccd3 52px,#bfc2c9 52px,#bfc2c9 54px);z-index:999;display:grid;place-items:center;font:600 15px system-ui;color:#555`;
+  kb.textContent = 'Clavier (simulé)';
+  document.body.appendChild(kb);
+}, KB);
+await ios.screenshot({ path: `${outDir}/${String(++shot).padStart(2, '0')}-clavier-iphone.png` });
+// Champ « note » en bas de la feuille : il doit être ramené dans la zone visible.
+await ios.evaluate(() => document.getElementById('fake-kb').remove());
+await ios.click('[data-more]');
+await ios.focus('textarea[name="note"]');
+await ios.waitForTimeout(900);
+const note = await ios.evaluate(() => { const b = document.querySelector('textarea[name="note"]').getBoundingClientRect(); return { top: b.top, bottom: b.bottom }; });
+const saveBox = await ios.evaluate(() => document.querySelector('[data-save]').getBoundingClientRect().top);
+assert.ok(note.top >= 0 && note.bottom <= saveBox + 1, `iPhone : champ note masqué (${JSON.stringify(note)}, bouton à ${saveBox})`);
+await ios.close();
+await iosCtx.close();
+
+// Android (Chrome, interactive-widget=resizes-content) : la page entière rétrécit.
+const andCtx = await browser.newContext({ ...devices['Pixel 7'], locale: 'fr-FR' });
+const and = await andCtx.newPage();
+and.on('pageerror', (e) => errors.push(`android pageerror: ${e.message}`));
+await and.goto(base);
+await and.evaluate(() => localStorage.setItem('lesacadiabetgesta:v1', JSON.stringify({ version: 1, onboarded: true, profile: { status: 'gdm', unit: 'mmol/L' }, readings: [], tests: [] })));
+await and.reload();
+await and.waitForSelector('.hello');
+await and.click('[data-fab]');
+await and.waitForSelector('#glyc-value:focus');
+const full = devices['Pixel 7'].viewport;
+await and.setViewportSize({ width: full.width, height: full.height - 300 });
+await and.waitForTimeout(400);
+await and.keyboard.type('6,4');
+await checkEntryVisible(and, full.height - 300, 'Android');
+await and.screenshot({ path: `${outDir}/${String(++shot).padStart(2, '0')}-clavier-android.png` });
+await and.close();
+await andCtx.close();
+console.log('Clavier ✓ : titre, valeur, unités et bouton Enregistrer visibles (iPhone et Android)');
+
 await writeFile(`${outDir}/errors.json`, JSON.stringify(errors, null, 2));
 await browser.close();
 server.close();

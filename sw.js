@@ -1,6 +1,6 @@
 // Service worker : l'application fonctionne entièrement hors connexion.
 // Pensez à incrémenter VERSION à chaque mise à jour des fichiers.
-const VERSION = 'lsadg-v1.0.0';
+const VERSION = 'lsadg-v1.2.1';
 const ASSETS = [
   './',
   './index.html',
@@ -18,10 +18,14 @@ const ASSETS = [
   './js/store.js',
   './js/ui.js',
   './js/units.js',
+  './js/version.js',
+  './js/viewport.js',
+  './js/install.js',
   './js/views/components.js',
   './js/views/entry.js',
   './js/views/export.js',
   './js/views/home.js',
+  './js/views/install.js',
   './js/views/journal.js',
   './js/views/learn.js',
   './js/views/onboarding.js',
@@ -30,12 +34,18 @@ const ASSETS = [
   './assets/icons/icon.svg',
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png',
+  './assets/icons/icon-maskable-192.png',
   './assets/icons/icon-maskable-512.png',
   './assets/icons/apple-touch-icon.png',
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(VERSION).then((cache) => cache.addAll(ASSETS)).then(() => self.skipWaiting()));
+  // cache: 'reload' : on contourne le cache HTTP pour récupérer à coup sûr les fichiers de la nouvelle version.
+  event.waitUntil(
+    caches.open(VERSION)
+      .then((cache) => cache.addAll(ASSETS.map((url) => new Request(url, { cache: 'reload' }))))
+      .then(() => self.skipWaiting()),
+  );
 });
 
 self.addEventListener('activate', (event) => {

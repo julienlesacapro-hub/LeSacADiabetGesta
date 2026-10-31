@@ -8,6 +8,9 @@ import { renderProfile } from './views/profile.js';
 import { renderOnboarding, resetOnboarding } from './views/onboarding.js';
 import { renderExport } from './views/export.js';
 import { openEntry } from './views/entry.js';
+import { renderInstall } from './views/install.js';
+import { initViewport } from './viewport.js';
+import { initInstall, onInstallChange } from './install.js';
 
 const view = document.getElementById('view');
 const tabbar = document.getElementById('tabbar');
@@ -36,10 +39,14 @@ function parseRoute() {
 }
 
 let lastKey = '';
+let pendingReload = false;
+const OPEN_BEFORE_ONBOARDING = ['bienvenue', 'comprendre', 'installer'];
+
 function route({ preserveScroll = false } = {}) {
+  if (pendingReload && !isSheetOpen()) { location.reload(); return; }
   const st = getState();
   let { section, param } = parseRoute();
-  if (!st.onboarded && section !== 'bienvenue' && section !== 'comprendre') {
+  if (!st.onboarded && !OPEN_BEFORE_ONBOARDING.includes(section)) {
     location.replace('#/bienvenue');
     return;
   }
@@ -51,7 +58,7 @@ function route({ preserveScroll = false } = {}) {
   if (isSheetOpen() && !preserveScroll) closeSheet(true);
   const key = `${section}/${param || ''}`;
   const scroll = window.scrollY;
-  document.body.classList.toggle('no-tabbar', section === 'bienvenue');
+  document.body.classList.toggle('no-tabbar', section === 'bienvenue' || !st.onboarded);
   view.classList.remove('view-enter');
   switch (section) {
     case 'bienvenue':
@@ -62,9 +69,10 @@ function route({ preserveScroll = false } = {}) {
     case 'comprendre': param ? renderTopic(view, param) : renderLearnIndex(view); break;
     case 'profil': renderProfile(view); break;
     case 'export': renderExport(view); break;
+    case 'installer': renderInstall(view); break;
     default: section = 'accueil'; renderHome(view);
   }
-  renderTabbar(section === 'export' ? 'carnet' : section);
+  renderTabbar({ export: 'carnet', installer: 'profil' }[section] || section);
   if (key !== lastKey) {
     void view.offsetWidth;
     view.classList.add('view-enter');
@@ -73,7 +81,7 @@ function route({ preserveScroll = false } = {}) {
   } else if (preserveScroll) {
     window.scrollTo(0, scroll);
   }
-  const titles = { accueil: 'Accueil', carnet: 'Carnet', comprendre: 'Comprendre', profil: 'Profil', export: 'Partager', bienvenue: 'Bienvenue' };
+  const titles = { accueil: 'Accueil', carnet: 'Carnet', comprendre: 'Comprendre', profil: 'Profil', export: 'Partager', bienvenue: 'Bienvenue', installer: 'Installer' };
   document.title = `${titles[section] || 'Accueil'} · LeSacADiabetGesta`;
   lastKey = key;
 }
@@ -86,16 +94,33 @@ window.addEventListener('hashchange', () => route());
 subscribe(() => {
   const { section } = parseRoute();
   if (!getState().onboarded) {
-    if (section !== 'bienvenue' && section !== 'comprendre') { resetOnboarding(); location.replace('#/bienvenue'); }
+    if (!OPEN_BEFORE_ONBOARDING.includes(section)) { resetOnboarding(); location.replace('#/bienvenue'); }
     return;
   }
   if (['accueil', 'carnet'].includes(section)) route({ preserveScroll: true });
 });
 
+initViewport();
+initInstall();
+onInstallChange(() => {
+  if (parseRoute().section === 'accueil') route({ preserveScroll: true });
+});
 route();
 
+// Mode hors ligne et mises à jour : quand une nouvelle version prend le relais, on recharge la page
+// (sauf pendant une saisie : le rechargement attend la fermeture de la fenêtre).
 if ('serviceWorker' in navigator && location.protocol !== 'file:') {
+  const hadController = !!navigator.serviceWorker.controller;
+  navigator.serviceWorker.addEventListener('controllerchange', () => {
+    if (!hadController || pendingReload) return;
+    pendingReload = true;
+    if (!isSheetOpen()) location.reload();
+  });
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(() => { /* hors ligne indisponible : l'application fonctionne quand même */ });
+    navigator.serviceWorker.register('sw.js').then((reg) => {
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') reg.update().catch(() => {});
+      });
+    }).catch(() => { /* hors ligne indisponible : l'application fonctionne quand même */ });
   });
 }

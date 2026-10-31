@@ -352,18 +352,20 @@ body.no-tabbar .tabbar { display: none; }
 .sheet-wrap { position: fixed; inset: 0; z-index: 50; }
 .sheet-backdrop { position: absolute; inset: 0; background: rgba(20, 12, 24, 0.42); opacity: 0; transition: opacity 0.25s ease; }
 .sheet {
-  position: absolute; left: 50%; bottom: 0; transform: translate(-50%, 100%);
-  width: 100%; max-width: 640px; max-height: 94dvh; overflow-y: auto; overscroll-behavior: contain;
+  /* --kb : hauteur cachée par le clavier ; --vv-h : hauteur réellement visible (voir js/viewport.js). */
+  position: absolute; left: 50%; bottom: var(--kb, 0px); transform: translate(-50%, 28px); opacity: 0;
+  width: 100%; max-width: 640px; max-height: calc(var(--vv-h, 100dvh) - 10px); overflow-y: auto; overscroll-behavior: contain;
+  -webkit-overflow-scrolling: touch;
   background: var(--surface); border-radius: 26px 26px 0 0; box-shadow: var(--shadow-2);
-  padding: 8px 18px calc(20px + var(--safe-b));
-  transition: transform 0.3s cubic-bezier(0.2, 0.9, 0.25, 1);
+  padding: 8px 18px 0;
+  transition: transform 0.28s cubic-bezier(0.2, 0.9, 0.25, 1), opacity 0.2s ease;
 }
 .sheet-wrap.show .sheet-backdrop { opacity: 1; }
-.sheet-wrap.show .sheet { transform: translate(-50%, 0); }
+.sheet-wrap.show .sheet { transform: translate(-50%, 0); opacity: 1; }
 .sheet-grip { width: 40px; height: 5px; border-radius: 3px; background: var(--surface-3); margin: 4px auto 10px; }
 .sheet-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 14px; }
 .sheet-title { font-family: var(--font-display); font-size: 23px; font-weight: 600; }
-.sheet-body { padding-top: 4px; }
+.sheet-body { padding-top: 4px; padding-bottom: calc(20px + var(--safe-b)); }
 
 .value-box {
   margin: 16px 0 6px; padding: 14px 16px 12px; border-radius: 22px;
@@ -389,8 +391,14 @@ body.no-tabbar .tabbar { display: none; }
 .unit-note { font-size: 13px; color: var(--warn); margin-top: 6px; min-height: 0; }
 .entry-meta { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
 .more-toggle { margin-top: 12px; }
-.entry-actions { display: flex; gap: 10px; margin-top: 18px; }
+.entry-actions { display: flex; gap: 10px; }
 .entry-actions .btn-primary { flex: 1; }
+/* Barre d'action collée en bas de la feuille : « Enregistrer » reste visible au-dessus du clavier. */
+.sheet-actions {
+  position: sticky; bottom: 0; z-index: 2;
+  margin: 16px -18px 0; padding: 12px 18px calc(14px + var(--safe-b));
+  background: var(--surface); box-shadow: 0 -1px 0 var(--border);
+}
 
 /* ---------- Accueil ---------- */
 
@@ -701,3 +709,56 @@ input[type='date'].input, input[type='time'].input { display: block; -webkit-app
 .thresholds th { text-transform: none; letter-spacing: 0; }
 .carnet .day { white-space: nowrap; font-size: 12.5px; }
 .carnet th.daycol, .carnet td.daycol { width: 92px; }
+
+/* ---------- Clavier ouvert : affichage compact ----------
+   Objectif : titre, moment, valeur, statut, unités et « Enregistrer » visibles ensemble,
+   même avec seulement ~330 px au-dessus du clavier (iPhone, Safari, clavier complet). */
+body.kb-open .tabbar, body.kb-open #toast-root { display: none; }
+body.kb-open .sheet { border-radius: 18px 18px 0 0; padding-top: 4px; max-height: calc(var(--vv-h, 100dvh) - 4px); }
+body.kb-open .sheet-grip { display: none; }
+body.kb-open .sheet-head { margin-bottom: 6px; }
+body.kb-open .sheet-title { font-size: 17px; }
+body.kb-open .sheet-head .icon-btn { width: 32px; height: 32px; border-radius: 10px; }
+body.kb-open .moment-btn { min-height: 34px; padding: 4px 2px; border-radius: 11px; }
+body.kb-open .moment-btn .ico { display: none; }
+body.kb-open .value-box { margin: 6px 0 2px; padding: 6px 12px; border-radius: 16px; }
+body.kb-open .value-input { font-size: 36px; }
+body.kb-open .value-unit { font-size: 17px; }
+body.kb-open .value-conv { font-size: 13px; min-height: 18px; margin-top: 0; }
+body.kb-open .value-status { font-size: 13.5px; min-height: 18px; margin-top: 2px; }
+body.kb-open .unit-switch { margin-top: 6px; padding: 3px; }
+body.kb-open .unit-switch button { padding: 5px 6px; font-size: 14px; }
+body.kb-open .unit-note { font-size: 12px; margin-top: 4px; }
+body.kb-open .sheet-actions { margin-top: 8px; padding: 8px 18px; }
+body.kb-open .sheet-actions .btn { min-height: 44px; }
+
+/* ---------- Installation ---------- */
+.install-banner { display: flex; align-items: center; gap: 12px; padding: 12px 14px; margin-bottom: 16px; }
+.install-banner .ib-ico { width: 40px; height: 40px; border-radius: 13px; display: grid; place-items: center; background: var(--primary-soft); color: var(--primary-strong); flex: none; }
+.install-banner .ib-text { flex: 1; min-width: 0; font-size: 14px; color: var(--text-2); }
+.install-banner .ib-text strong { display: block; color: var(--text); font-size: 15px; }
+.install-banner .icon-btn { width: 36px; height: 36px; border: 0; background: transparent; color: var(--text-3); }
+.install-status { display: flex; gap: 12px; align-items: flex-start; }
+.install-status .ico { color: var(--primary); margin-top: 2px; }
+.install-status.ok .ico { color: var(--ok); }
+.install-status strong { display: block; }
+.install-status span { color: var(--text-3); font-size: 13.5px; }
+.install-steps { padding-left: 22px; margin: 10px 0 14px; color: var(--text-2); }
+.install-steps li + li { margin-top: 8px; }
+.install-steps strong { color: var(--text); }
+.ico.inline { display: inline-block; vertical-align: -3px; }
+.faq + .faq { border-top: 1px solid var(--border); margin-top: 6px; padding-top: 6px; }
+.faq summary { cursor: pointer; font-weight: 650; padding: 8px 0; list-style-position: outside; }
+.faq-body { color: var(--text-2); font-size: 15px; padding-bottom: 8px; }
+
+/* ---------- Choix du moment (fenêtre de saisie) ---------- */
+.moment-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.moment-btn {
+  display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px;
+  min-height: 58px; padding: 8px 2px; border-radius: 14px;
+  border: 1px solid var(--border); background: var(--surface); color: var(--text-2);
+  font-weight: 650; font-size: clamp(11px, 3.1vw, 13px); line-height: 1.15; letter-spacing: -0.01em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.moment-btn span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+.moment-btn[aria-pressed='true'] { background: var(--primary); border-color: var(--primary); color: var(--on-primary); }

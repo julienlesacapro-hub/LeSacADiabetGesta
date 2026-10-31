@@ -9,6 +9,7 @@ import { formatDateLong, formatDateShort, formatTime, todayISO, tsDate } from '.
 import { esc, icon, statusMark } from '../ui.js';
 import { adviceCard, ring } from './components.js';
 import { openEntry } from './entry.js';
+import { bannerDismissed, canPromptInstall, dismissBanner, isStandalone, promptInstall } from '../install.js';
 
 const MOMENT_ICONS = { fasting: 'sunrise', post_breakfast: 'coffee', post_lunch: 'utensils', post_dinner: 'moon' };
 
@@ -113,7 +114,20 @@ export function renderHome(view) {
     </section>`;
 
   const name = profile.firstName ? `Bonjour ${esc(profile.firstName)}` : 'Bonjour';
+  // Bandeau d'installation : uniquement dans le navigateur, tant qu'il n'a pas été masqué.
+  const showInstall = !isStandalone() && !bannerDismissed();
+  const installBanner = showInstall
+    ? `<section class="card install-banner" data-installbanner>
+        <span class="ib-ico">${icon('download')}</span>
+        <span class="ib-text"><strong>Installer l’application</strong>Accès en un geste, plein écran, hors connexion.</span>
+        ${canPromptInstall()
+          ? '<button type="button" class="btn btn-primary btn-sm" data-installnow>Installer</button>'
+          : '<a class="btn btn-secondary btn-sm" href="#/installer">Comment ?</a>'}
+        <button type="button" class="icon-btn" data-installhide aria-label="Masquer">${icon('x', { size: 18 })}</button>
+      </section>`
+    : '';
   view.innerHTML = `
+    ${installBanner}
     <header class="page-head">
       <div class="eyebrow">${esc(formatDateLong(today, { year: false }))}</div>
       <h1 class="hello">${name}</h1>
@@ -126,6 +140,13 @@ export function renderHome(view) {
     <p class="disclaimer">${icon('shield', { size: 14, cls: 'inline' })} Vos données restent sur ce téléphone. Cette application ne remplace pas l’avis de votre équipe soignante.</p>
   `;
 
+  view.querySelector('[data-installnow]')?.addEventListener('click', async () => {
+    if ((await promptInstall()) === 'unavailable') location.hash = '#/installer';
+  });
+  view.querySelector('[data-installhide]')?.addEventListener('click', () => {
+    dismissBanner();
+    view.querySelector('[data-installbanner]')?.remove();
+  });
   view.querySelectorAll('[data-add]').forEach((b) => b.addEventListener('click', () => openEntry({ moment: b.dataset.add })));
   view.querySelectorAll('[data-edit]').forEach((b) => b.addEventListener('click', () => {
     const r = getState().readings.find((x) => x.id === b.dataset.edit);

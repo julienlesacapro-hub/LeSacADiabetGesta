@@ -1,8 +1,9 @@
 // Premier lancement : avertissement, puis recueil des informations pré-requises en 5 étapes courtes.
-import { getState, setProfile, update, requestPersistence } from '../store.js';
+import { getState, setProfile, update, requestPersistence, importBackup } from '../store.js';
+import { isStandalone } from '../install.js';
 import { activeRiskFactors } from '../pregnancy.js';
 import { RISK_FACTORS } from '../guidelines.js';
-import { esc, icon } from '../ui.js';
+import { esc, icon, toast } from '../ui.js';
 import { pregnancyFields, bodyFields, historyFields, statusFields, unitFields, collectProfile, refreshPreviews } from './profile.js';
 
 const STEPS = [
@@ -35,7 +36,23 @@ export function renderOnboarding(view) {
         <div class="callout warn">${icon('alert')}<p>Cette application est un outil d’information et de suivi personnel. Elle <strong>ne remplace pas</strong> l’avis de votre médecin, sage-femme ou diabétologue, et ne pose pas de diagnostic. En cas de malaise ou d’inquiétude, contactez votre équipe ou le 15.</p></div>
       </div>
       <div class="onb-foot"><button type="button" class="btn btn-primary" data-next>J’ai compris, commencer${icon('chevronRight', { size: 20 })}</button></div>
+      <div class="row wrap" style="justify-content:center;margin-top:10px">
+        ${isStandalone() ? '' : `<a class="btn btn-ghost btn-sm" href="#/installer">${icon('download', { size: 18 })}Installer l’application</a>`}
+        <label class="btn btn-ghost btn-sm" style="cursor:pointer">${icon('upload', { size: 18 })}Restaurer une sauvegarde<input type="file" accept="application/json,.json" data-restore hidden></label>
+      </div>
     </div>`;
+    view.querySelector('[data-restore]').addEventListener('change', async (e) => {
+      const file = e.target.files?.[0];
+      if (!file) return;
+      try {
+        const s = importBackup(await file.text());
+        update((x) => { x.onboarded = true; x.disclaimerAcceptedAt = x.disclaimerAcceptedAt || new Date().toISOString(); });
+        toast(`Sauvegarde restaurée : ${s.readings.length} mesure${s.readings.length > 1 ? 's' : ''}`);
+        location.hash = '#/accueil';
+      } catch (err) {
+        toast(err.message || 'Fichier illisible');
+      }
+    });
     view.querySelector('[data-next]').addEventListener('click', () => {
       update((x) => { x.disclaimerAcceptedAt = new Date().toISOString(); });
       requestPersistence();

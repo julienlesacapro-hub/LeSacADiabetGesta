@@ -17,17 +17,23 @@ L’application est une **PWA** (application web progressive) : elle s’install
 
 ## Installer sur le téléphone
 
-1. Ouvrir l’adresse de l’application (voir « Mise en ligne »).
-2. **iPhone (Safari)** : bouton Partager → « Sur l’écran d’accueil ».
-   **Android (Chrome)** : menu ⋮ → « Installer l’application ».
-3. L’application s’ouvre ensuite en plein écran et fonctionne sans réseau.
+1. Ouvrir l’adresse de l’application dans **Chrome** (Android) ou **Safari** (iPhone) — pas dans le navigateur intégré de WhatsApp, Gmail ou Facebook.
+2. **Android (Chrome)** : bouton « Installer » de l’application (bandeau d’accueil ou Profil → Installer l’application), ou menu ⋮ → « Installer l’application ».
+   **iPhone (Safari)** : bouton Partager → « Sur l’écran d’accueil » → « Ajouter ».
+3. L’application apparaît sous le nom **LeSacADiabetGesta** et s’ouvre en plein écran, sans réseau.
 
-> Sur iPhone, l’installation sur l’écran d’accueil est recommandée : Safari peut effacer les données des sites non installés après une longue période sans utilisation. Pensez à faire des sauvegardes (Profil → Mes données).
+L’écran **Profil → Installer l’application** (adresse `#/installer`) donne les étapes adaptées au téléphone utilisé et un dépannage.
+
+> **iPhone** : l’application installée ne partage pas les données de Safari. Si des glycémies ont été saisies dans Safari, faire une sauvegarde (Profil → Sauvegarder) puis « Restaurer une sauvegarde » dans l’application installée (bouton disponible dès l’écran de bienvenue).
+
+### « Application déjà installée » mais introuvable
+
+La version 1.0 s’installait sous le nom court « DiabetGesta », avec un autre identifiant. Depuis la 1.2.1, l’identifiant d’installation (`id` du manifeste) est nouveau : le navigateur la considère comme une nouvelle application. Si un message « déjà installée » persiste : sauvegarder les données, chercher « DiabetGesta » dans Paramètres → Applications et la désinstaller, consulter `chrome://webapks` dans Chrome (liste des applications web installées), fermer complètement le navigateur, puis réinstaller.
 
 ## Mise en ligne (GitHub Pages)
 
 Le workflow `.github/workflows/pages.yml` lance les tests puis publie le site à chaque push sur `main`.
-Une seule action manuelle : **Settings → Pages → Source : « GitHub Actions »**. (Pour un dépôt privé, GitHub Pages nécessite un abonnement payant.)
+Une seule action manuelle : **Settings → Pages → Source : « GitHub Actions »**. Si la source reste « Deploy from a branch », le site est publié deux fois à chaque push (par le workflow et par la publication automatique de GitHub) ; le fichier `.nojekyll` garantit au moins que les fichiers sont servis tels quels. (Pour un dépôt privé, GitHub Pages nécessite un abonnement payant.)
 
 Tout hébergement statique en HTTPS convient (Netlify, OVH, serveur hospitalier…) : il suffit de copier `index.html`, `manifest.webmanifest`, `sw.js`, `css/`, `js/`, `assets/`, `vendor/`.
 
@@ -42,7 +48,7 @@ npm run e2e        # parcours complet dans Chromium au format iPhone (nécessite
 node tools/icons.mjs  # régénère les icônes PNG depuis assets/icons/icon.svg
 ```
 
-Après toute modification des fichiers, incrémenter `VERSION` dans `sw.js` pour que les téléphones récupèrent la mise à jour.
+Après toute modification des fichiers, changer la version dans `js/version.js`, `package.json` et `VERSION` de `sw.js` (un test vérifie qu’elles concordent) : les téléphones téléchargent alors la mise à jour en arrière-plan et l’appliquent au lancement suivant.
 
 ### Architecture
 
@@ -57,6 +63,9 @@ js/advice.js       moteur de conseils
 js/chart.js        courbes (modèle partagé écran / PDF)
 js/csv.js, js/pdf.js   exports
 js/store.js        stockage local (localStorage), sauvegarde JSON
+js/viewport.js     clavier virtuel : garde la fenêtre de saisie visible au-dessus du clavier
+js/install.js      installation (bouton « Installer », détection du navigateur et du mode installé)
+js/version.js      numéro de version
 js/views/          écrans (accueil, saisie, carnet, comprendre, profil, partage, premier lancement)
 vendor/jspdf/      jsPDF 4.2.1 (licence MIT), chargé uniquement à la création d’un PDF
 ```
@@ -83,6 +92,11 @@ Ils sont signalés comme tels dans l’interface et paramétrables dans `js/guid
 - détection de « dépassements répétés » : au moins 2 dépassements au même moment, ou au moins 20 % des mesures (si ≥ 8 mesures), sur 7 jours ;
 - repère de prise de poids « à ce stade » calculé à partir des rythmes hebdomadaires de l’IOM (tolérance ± 1 kg) ;
 - détection automatique de l’unité selon des plages de valeurs usuelles (en cas d’ambiguïté, l’application le signale).
+
+## Historique des versions
+
+- **1.2.1** — Saisie : la fenêtre reste entièrement visible au-dessus du clavier sur iPhone et Android (mesure de la zone visible, bouton « Enregistrer » fixé au-dessus du clavier, affichage compact, choix du moment sur une seule ligne). Installation : nouvel identifiant d’installation, nom « LeSacADiabetGesta » sous l’icône, icônes PNG uniquement (dont icône adaptative 192 px), bouton « Installer », page d’aide et de dépannage, restauration d’une sauvegarde dès l’écran de bienvenue, mises à jour appliquées automatiquement.
+- **1.0.0** — Première version.
 
 ## Limites, réglementation et confidentialité
 
