@@ -114,6 +114,9 @@ export function openSheet(html, { label = 'Fenêtre', onClose, className = '' } 
     </section>`;
   root.appendChild(wrap);
   document.body.classList.add('sheet-open');
+  // Le champ peut recevoir le focus immédiatement (clavier iOS) : la feuille est déjà à sa place,
+  // seule son opacité est animée, ce qui évite que le navigateur décale la page.
+  void wrap.offsetHeight;
   const prevFocus = document.activeElement;
   wrap._onClose = () => {
     onClose?.();

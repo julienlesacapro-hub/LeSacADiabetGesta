@@ -7,6 +7,8 @@ import { nowLocalTs, todayISO, tsDate, tsTime, formatTime, isISODate } from '../
 import { esc, icon, openSheet, closeSheet, toast, statusMark, confirmDialog } from '../ui.js';
 
 const MOMENT_ICONS = { fasting: 'sunrise', post_breakfast: 'coffee', post_lunch: 'utensils', post_dinner: 'moon', other: 'clock' };
+// Libellés courts : les cinq moments tiennent sur une ligne, même clavier ouvert.
+const MOMENT_LABELS = { fasting: 'À jeun', post_breakfast: 'Petit-déj', post_lunch: 'Déjeuner', post_dinner: 'Dîner', other: 'Autre' };
 
 export function openEntry({ reading = null, moment = null, date = null } = {}) {
   const st = getState();
@@ -42,8 +44,8 @@ export function openEntry({ reading = null, moment = null, date = null } = {}) {
         <button type="button" class="icon-btn" data-close aria-label="Fermer">${icon('x')}</button>
       </div>
 
-      <div class="chips" role="group" aria-label="Moment de la mesure">
-        ${MOMENTS.map((m) => `<button type="button" class="chip" data-moment="${m.id}" aria-pressed="${m.id === model.moment}">${icon(MOMENT_ICONS[m.id])}${esc(m.short)}</button>`).join('')}
+      <div class="moment-grid" role="group" aria-label="Moment de la mesure">
+        ${MOMENTS.map((m) => `<button type="button" class="moment-btn" data-moment="${m.id}" aria-pressed="${m.id === model.moment}" aria-label="${esc(m.label)}">${icon(MOMENT_ICONS[m.id], { size: 20 })}<span>${esc(MOMENT_LABELS[m.id])}</span></button>`).join('')}
       </div>
 
       <div class="value-box" data-valuebox>
@@ -78,7 +80,7 @@ export function openEntry({ reading = null, moment = null, date = null } = {}) {
         <label class="field"><span class="label">Note</span><textarea class="textarea" name="note" maxlength="500" placeholder="Repas, activité, ressenti…">${esc(model.note)}</textarea></label>
       </div>
 
-      <div class="entry-actions">
+      <div class="entry-actions sheet-actions">
         ${editing ? `<button type="button" class="btn btn-danger" data-delete aria-label="Supprimer">${icon('trash')}</button>` : ''}
         <button type="submit" class="btn btn-primary" data-save>${icon('check')}Enregistrer</button>
       </div>
@@ -122,7 +124,7 @@ export function openEntry({ reading = null, moment = null, date = null } = {}) {
         const ev = evaluateReading({ value, unit: model.unit, moment: model.moment }, targets);
         box.classList.add(`is-${ev.status}`);
         statusEl.className = `value-status ${ev.status}`;
-        const tgt = ev.target ? ` (objectif < ${formatValue(ev.target[model.unit], model.unit)})` : '';
+        const tgt = ev.target ? ` (< ${formatValue(ev.target[model.unit], model.unit)})` : '';
         statusEl.innerHTML = `${statusMark(ev.status, 14)}${esc(STATUS_LABELS[ev.status])}${esc(tgt)}`;
       }
     } else {
@@ -181,6 +183,12 @@ export function openEntry({ reading = null, moment = null, date = null } = {}) {
   });
 
   input.addEventListener('input', refresh);
+  // Les champs du bas (insuline, note) sont ramenés au centre une fois le clavier ouvert.
+  sheet.addEventListener('focusin', (e) => {
+    const el = e.target;
+    if (el === input || !el.matches?.('input, textarea')) return;
+    setTimeout(() => el.scrollIntoView({ block: 'center', behavior: 'smooth' }), 320);
+  });
   form.date.addEventListener('change', refresh);
 
   form.addEventListener('submit', async (e) => {

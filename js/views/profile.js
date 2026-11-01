@@ -5,8 +5,9 @@ import { pregnancyInfo, formatGA, bmi, bmiCategory, maternalAge } from '../pregn
 import { UNITS, UNIT_INFO, parseNumber, formatNumber, formatValue, isUnit, makeThreshold } from '../units.js';
 import { formatDateShort, todayISO } from '../dates.js';
 import { esc, icon, toast, confirmDialog, downloadBlob } from '../ui.js';
+import { APP_VERSION } from '../version.js';
+import { isStandalone } from '../install.js';
 
-export const APP_VERSION = '1.0.0';
 
 function checkbox(name, label, checked, hint = '', type = 'checkbox', value = 'on') {
   return `<label class="check"><input type="${type}" name="${name}" value="${esc(value)}" ${checked ? 'checked' : ''}><span class="box">${icon('check', { size: 16 })}</span><span class="check-text">${label}${hint ? `<small>${hint}</small>` : ''}</span></label>`;
@@ -196,6 +197,7 @@ export function renderProfile(view) {
 
     <h2 class="section-title">À propos</h2>
     <section class="card settings-group">
+      <a class="setting" href="#/installer"><span class="s-ico">${icon('download', { size: 20 })}</span><span class="s-text"><strong>${isStandalone() ? 'Application installée' : 'Installer l’application'}</strong><span>${isStandalone() ? 'Aide et dépannage' : 'Sur l’écran d’accueil du téléphone, utilisable hors connexion'}</span></span>${icon('chevronRight', { size: 18 })}</a>
       <a class="setting" href="#/comprendre/sources"><span class="s-ico">${icon('book', { size: 20 })}</span><span class="s-text"><strong>Sources, limites et confidentialité</strong><span>Références médicales utilisées</span></span>${icon('chevronRight', { size: 18 })}</a>
       <div class="setting"><span class="s-ico">${icon('shield', { size: 20 })}</span><span class="s-text"><strong>LeSacADiabetGesta ${APP_VERSION}</strong><span>Outil d’information et de suivi personnel. Ne remplace pas un avis médical.</span></span></div>
     </section>`;

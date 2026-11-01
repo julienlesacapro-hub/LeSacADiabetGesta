@@ -19,6 +19,7 @@ async function render(size, file, { maskable = false } = {}) {
 }
 await render(192, 'icon-192.png');
 await render(512, 'icon-512.png');
+await render(192, 'icon-maskable-192.png', { maskable: true });
 await render(512, 'icon-maskable-512.png', { maskable: true });
 await render(180, 'apple-touch-icon.png', { maskable: true });
 await browser.close();
