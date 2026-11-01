@@ -1,4 +1,5 @@
 // Écran d'accueil : situation, mesures du jour, synthèse de la semaine et conseils personnalisés.
+// © 2026 LESACA Julien. Tous droits réservés.
 import { getState } from '../store.js';
 import { MAIN_MOMENTS, STATUSES, TREATMENTS } from '../guidelines.js';
 import { buildAdvice } from '../advice.js';

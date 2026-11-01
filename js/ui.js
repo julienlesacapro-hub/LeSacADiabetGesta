@@ -1,4 +1,5 @@
 // Petits utilitaires d'interface : échappement, icônes, feuilles modales, notifications.
+// © 2026 LESACA Julien. Tous droits réservés.
 
 export function esc(s) {
   return String(s ?? '')

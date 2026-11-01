@@ -1,6 +1,8 @@
 // Premier lancement : avertissement, puis recueil des informations pré-requises en 5 étapes courtes.
+// © 2026 LESACA Julien. Tous droits réservés.
 import { getState, setProfile, update, requestPersistence, importBackup } from '../store.js';
 import { isStandalone } from '../install.js';
+import { APP_VERSION, COPYRIGHT } from '../version.js';
 import { activeRiskFactors } from '../pregnancy.js';
 import { RISK_FACTORS } from '../guidelines.js';
 import { esc, icon, toast } from '../ui.js';
@@ -23,7 +25,7 @@ export function renderOnboarding(view) {
   const s = STEPS[step];
   if (s.id === 'welcome') {
     view.innerHTML = `<div class="onb view-enter">
-      <div class="brand"><img class="brand-logo" src="assets/icons/icon.svg" alt=""><div class="brand-name">LeSacADiabetGesta<small>Diabète gestationnel</small></div></div>
+      <div class="brand"><img class="brand-logo" src="assets/icons/icon-192.png" alt="" width="56" height="56"><div class="brand-name">LeSacADiabetGesta<small>Diabète gestationnel</small></div></div>
       <div class="onb-body">
         <h1 class="welcome-hero">Votre grossesse, en toute sérénité.</h1>
         <p class="muted">Un compagnon simple pour comprendre le diabète gestationnel, préparer le dépistage et suivre vos glycémies.</p>
@@ -40,6 +42,7 @@ export function renderOnboarding(view) {
         ${isStandalone() ? '' : `<a class="btn btn-ghost btn-sm" href="#/installer">${icon('download', { size: 18 })}Installer l’application</a>`}
         <label class="btn btn-ghost btn-sm" style="cursor:pointer">${icon('upload', { size: 18 })}Restaurer une sauvegarde<input type="file" accept="application/json,.json" data-restore hidden></label>
       </div>
+      <p class="copyright center" style="margin-top:18px">LeSacADiabetGesta ${APP_VERSION} · ${COPYRIGHT}</p>
     </div>`;
     view.querySelector('[data-restore]').addEventListener('change', async (e) => {
       const file = e.target.files?.[0];

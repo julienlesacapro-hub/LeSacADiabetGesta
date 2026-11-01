@@ -1,4 +1,5 @@
 // « Comprendre » : contenus d'information sourcés, frise du dépistage, HGPO animée, simulateur de résultats.
+// © 2026 LESACA Julien. Tous droits réservés.
 import { getState, saveTest, setProfile } from '../store.js';
 import { DIAGNOSIS, TARGETS, HYPO, RISK_FACTORS, OTHER_FACTORS, WEIGHT_GAIN, OGTT_WINDOW, REFS, refUrl } from '../guidelines.js';
 import { activeRiskFactors, bmi, bmiCategory, pregnancyInfo, maternalAge } from '../pregnancy.js';
@@ -6,6 +7,7 @@ import { UNITS, UNIT_INFO, parseNumber, formatValue, formatNumber, compareToThre
 import { formatDateShort, todayISO } from '../dates.js';
 import { esc, icon, toast, confirmDialog } from '../ui.js';
 import { sourcesBlock } from './components.js';
+import { COPYRIGHT } from '../version.js';
 
 export const TOPICS = [
   { id: 'dg', icon: 'drop', title: 'Le diabète gestationnel', desc: 'Définition, causes et enjeux' },
@@ -272,6 +274,8 @@ const CONTENT = {
       <li>Conversions : 1 mmol/L = 18,0156 mg/dL = 0,180156 g/L (masse molaire du glucose : 180,156 g/mol). Les comparaisons aux seuils se font dans l’unité de saisie, avec les valeurs publiées dans cette unité.</li>
       <li>Âge gestationnel : par défaut, convention française du terme à 41 SA (287 jours après les dernières règles), modifiable (40 SA) dans le profil.</li>
     </ul>
+    <h2>Droits d’auteur</h2>
+    <p>LeSacADiabetGesta — application, textes, logo et illustrations : <strong>${COPYRIGHT}</strong> Toute reproduction ou diffusion sans autorisation de l’auteur est interdite. Les recommandations citées restent la propriété de leurs auteurs ; la bibliothèque jsPDF est distribuée sous licence MIT.</p>
     <h2>Références</h2>
     <div class="sources" style="margin-top:0;border:0;padding:0"><ol>${Object.keys(REFS).map((id) => {
       const r = REFS[id];

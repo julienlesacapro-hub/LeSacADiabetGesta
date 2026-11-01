@@ -1,4 +1,5 @@
 // Moteur de conseils personnalisés.
+// © 2026 LESACA Julien. Tous droits réservés.
 // Chaque conseil indique sa base : 'reco' (issu d'une recommandation citée) ou 'app'
 // (repère propre à l'application, qui n'est pas une recommandation officielle).
 import { DIAGNOSIS, HYPO, VERY_HIGH, REPEAT_RULE, RISK_FACTORS, momentById } from './guidelines.js';

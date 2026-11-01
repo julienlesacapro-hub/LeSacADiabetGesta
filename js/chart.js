@@ -1,4 +1,5 @@
 // Courbes glycémiques : un petit graphique par moment de mesure (mêmes axes pour comparer).
+// © 2026 LESACA Julien. Tous droits réservés.
 // Le modèle (chartModel) est indépendant du rendu : il sert à l'écran (SVG) et au PDF.
 import { MAIN_MOMENTS, momentById } from './guidelines.js';
 import { evaluateReading, targetForMoment, STATUS_LABELS } from './analysis.js';

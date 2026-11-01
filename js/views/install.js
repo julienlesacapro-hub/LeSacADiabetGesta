@@ -1,4 +1,5 @@
 // Page « Installer l'application » : bouton d'installation quand le navigateur le permet,
+// © 2026 LESACA Julien. Tous droits réservés.
 // instructions selon le téléphone, et dépannage du message « application déjà installée ».
 import { exportBackup } from '../store.js';
 import { canPromptInstall, detectPlatform, isStandalone, onInstallChange, promptInstall } from '../install.js';

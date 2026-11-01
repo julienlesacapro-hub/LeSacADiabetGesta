@@ -1,4 +1,5 @@
 // Rapport PDF (A4) : synthèse, statistiques, courbes vectorielles et carnet détaillé.
+// © 2026 LESACA Julien. Tous droits réservés.
 // buildPdf() ne dépend pas du DOM : il reçoit le constructeur jsPDF en paramètre.
 import { MAIN_MOMENTS, STATUSES, TREATMENTS, REFS, HYPO, momentById, TAGS } from './guidelines.js';
 import { computeStats, dailyTable, evaluateReading, readingsBetween, resolveTargets, sortReadings } from './analysis.js';
@@ -6,6 +7,7 @@ import { chartModel, yDomain } from './chart.js';
 import { pregnancyInfo, gestationalAgeAt, formatGA, bmi, maternalAge } from './pregnancy.js';
 import { fromMgdl, formatNumber, formatValue, roundTo, UNIT_INFO, MGDL_PER_MMOL } from './units.js';
 import { daysBetween, formatDateShort, formatDayCompact, formatTime, todayISO } from './dates.js';
+import { APP_VERSION, AUTHOR, COPYRIGHT } from './version.js';
 
 const C = {
   plum: [107, 74, 126],
@@ -68,6 +70,8 @@ export function buildPdf(JsPDF, state, opts) {
     title: 'Relevé d’autosurveillance glycémique',
     subject: 'Diabète gestationnel — LeSacADiabetGesta',
     creator: 'LeSacADiabetGesta',
+    author: AUTHOR,
+    keywords: COPYRIGHT,
   });
 
   const fill = (c) => doc.setFillColor(...c);
@@ -91,17 +95,28 @@ export function buildPdf(JsPDF, state, opts) {
   doc.rect(0, 0, PAGE.w, 36, 'F');
   fill(C.plumDark);
   doc.circle(PAGE.w - 10, -6, 34, 'F');
-  // Logo : goutte
-  fill(C.white);
-  doc.circle(21, 19.5, 5.2, 'F');
-  doc.triangle(21, 9.5, 16.2, 17.6, 25.8, 17.6, 'F');
-  fill(C.plum);
-  doc.circle(21, 19.5, 2, 'F');
+  // Logo de l'application (image PNG) ; à défaut, une goutte dessinée.
+  let tx = 31;
+  if (opts.logo) {
+    try {
+      doc.addImage(opts.logo, 'PNG', 12, 6, 24, 24);
+      tx = 41;
+    } catch {
+      opts = { ...opts, logo: null };
+    }
+  }
+  if (!opts.logo) {
+    fill(C.white);
+    doc.circle(21, 19.5, 5.2, 'F');
+    doc.triangle(21, 9.5, 16.2, 17.6, 25.8, 17.6, 'F');
+    fill(C.plum);
+    doc.circle(21, 19.5, 2, 'F');
+  }
   ink(C.white);
-  font('bold', 17);
-  text('Relevé d’autosurveillance glycémique', 31, 17);
+  font('bold', opts.logo ? 15 : 17);
+  text('Relevé d’autosurveillance glycémique', tx, 17);
   font('normal', 10);
-  text('Diabète gestationnel  •  LeSacADiabetGesta', 31, 24);
+  text('Diabète gestationnel  •  LeSacADiabetGesta', tx, 24);
   font('normal', 8.5);
   text(`Édité le ${formatDateShort(today)}`, PAGE.w - PAGE.m, 14, { align: 'right' });
   text(`Période : ${formatDateShort(opts.from)} au ${formatDateShort(opts.to)}`, PAGE.w - PAGE.m, 19.5, { align: 'right' });
@@ -411,7 +426,10 @@ export function buildPdf(JsPDF, state, opts) {
     draw(C.border); doc.setLineWidth(0.3);
     doc.line(PAGE.m, PAGE.h - 12, PAGE.w - PAGE.m, PAGE.h - 12);
     font('normal', 7); ink(C.text3);
-    text('Document établi à partir des données saisies par la patiente dans LeSacADiabetGesta. Ne remplace pas un avis médical.', PAGE.m, PAGE.h - 7.5);
+    text('Document établi à partir des données saisies par la patiente dans LeSacADiabetGesta. Ne remplace pas un avis médical.', PAGE.m, PAGE.h - 8);
+    font('normal', 6.5);
+    text(`LeSacADiabetGesta ${APP_VERSION} — ${COPYRIGHT}`, PAGE.m, PAGE.h - 4.8);
+    font('normal', 7);
     text(`Page ${i} / ${total}`, PAGE.w - PAGE.m, PAGE.h - 7.5, { align: 'right' });
   }
   return doc;
@@ -433,7 +451,24 @@ export function loadJsPDF() {
   return loading;
 }
 
+/** Logo de l'application en data URL (null si indisponible : le PDF utilise alors une goutte). */
+async function loadLogo() {
+  try {
+    const res = await fetch('assets/icons/icon-512.png');
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    return await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
+
 export async function generatePdfBlob(state, opts) {
-  const JsPDF = await loadJsPDF();
-  return buildPdf(JsPDF, state, opts).output('blob');
+  const [JsPDF, logo] = await Promise.all([loadJsPDF(), loadLogo()]);
+  return buildPdf(JsPDF, state, { ...opts, logo }).output('blob');
 }

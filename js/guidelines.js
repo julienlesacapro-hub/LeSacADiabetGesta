@@ -1,4 +1,5 @@
 // Source unique des données médicales utilisées par l'application.
+// © 2026 LESACA Julien. Tous droits réservés.
 // Chaque valeur est rattachée à une référence (voir REFS). Les « repères de l'application »
 // (seuils d'alerte qui ne proviennent pas d'une recommandation) sont signalés explicitement.
 

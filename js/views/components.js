@@ -1,4 +1,5 @@
 // Composants d'interface partagés entre les écrans.
+// © 2026 LESACA Julien. Tous droits réservés.
 import { REFS, refUrl } from '../guidelines.js';
 import { esc, icon } from '../ui.js';
 

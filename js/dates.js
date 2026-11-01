@@ -1,4 +1,5 @@
 // Utilitaires de dates « calendaires » (sans fuseau horaire) au format ISO.
+// © 2026 LESACA Julien. Tous droits réservés.
 // Les jours sont manipulés en 'AAAA-MM-JJ' et les horodatages en 'AAAA-MM-JJTHH:MM' (heure locale).
 
 const DAY = 86400000;

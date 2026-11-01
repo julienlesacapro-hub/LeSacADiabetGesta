@@ -1,4 +1,5 @@
 // Point d'entrée : routage, barre d'onglets, bouton d'ajout et mode hors ligne.
+// © 2026 LESACA Julien. Tous droits réservés.
 import { load, getState, subscribe } from './store.js';
 import { icon, isSheetOpen, closeSheet } from './ui.js';
 import { renderHome } from './views/home.js';

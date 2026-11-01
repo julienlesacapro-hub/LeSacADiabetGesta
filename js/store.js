@@ -1,4 +1,5 @@
 // Stockage local (sur le téléphone uniquement). Aucune donnée n'est envoyée sur Internet.
+// © 2026 LESACA Julien. Tous droits réservés.
 import { isUnit, toMgdl } from './units.js';
 import { isISODate, isLocalTs } from './dates.js';
 import { MOMENTS } from './guidelines.js';

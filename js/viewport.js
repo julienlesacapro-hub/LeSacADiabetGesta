@@ -1,4 +1,5 @@
 // Clavier virtuel : garde la fenêtre de saisie entièrement visible au-dessus du clavier.
+// © 2026 LESACA Julien. Tous droits réservés.
 //
 // Sur iPhone (Safari) et sur Android (Chrome ≥ 108), le clavier ne réduit que la « zone visible »
 // (Visual Viewport) : un élément fixé en bas de l'écran passe alors sous le clavier.
