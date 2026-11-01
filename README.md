@@ -45,7 +45,7 @@ Aucune dépendance à installer, aucune étape de compilation.
 npm start          # serveur local sur http://localhost:8080
 npm test           # tests unitaires (Node ≥ 20) : conversions, seuils, âge gestationnel, conseils, CSV
 npm run e2e        # parcours complet dans Chromium au format iPhone (nécessite Playwright), captures dans e2e-output/
-node tools/icons.mjs  # régénère les icônes PNG depuis assets/icons/icon.svg
+node tools/logo.mjs   # régénère le logo et toutes les icônes depuis assets/logo/logo-source.jpg (nécessite Playwright)
 ```
 
 Après toute modification des fichiers, changer la version dans `js/version.js`, `package.json` et `VERSION` de `sw.js` (un test vérifie qu’elles concordent) : les téléphones téléchargent alors la mise à jour en arrière-plan et l’appliquent au lancement suivant.
@@ -93,8 +93,17 @@ Ils sont signalés comme tels dans l’interface et paramétrables dans `js/guid
 - repère de prise de poids « à ce stade » calculé à partir des rythmes hebdomadaires de l’IOM (tolérance ± 1 kg) ;
 - détection automatique de l’unité selon des plages de valeurs usuelles (en cas d’ambiguïté, l’application le signale).
 
+## Logo
+
+- `assets/logo/logo-source.jpg` : logo d’origine fourni par le propriétaire de l’application.
+- `tools/logo.mjs` : ajoute, en dessin vectoriel, une femme enceinte et un morceau de sucre qui sortent à moitié du sac ; le devant du sac (copie détourée de l’image d’origine) est redessiné par-dessus pour donner l’effet « dans le sac ». Le script produit :
+  - `assets/logo/logo.svg` et `logo-1024.png` (coins arrondis transparents), `logo-1024-carre.png` (fond bleu jusqu’aux bords) ;
+  - les icônes `assets/icons/` : 192 et 512 px (« any »), versions adaptatives 192 et 512 px (dessin réduit à 84 % pour rester dans la zone de sécurité des masques ronds d’Android), `apple-touch-icon.png` (180 px, sans transparence, iOS arrondissant lui-même les coins) et `favicon-48.png`.
+- Sur un téléphone où l’application est déjà installée, la nouvelle icône apparaît après la mise à jour automatique sur Android ; sur iPhone, il faut supprimer l’icône puis l’ajouter de nouveau à l’écran d’accueil.
+
 ## Historique des versions
 
+- **1.3.0** — Nouveau logo : le sac LeSacADiabetGesta d’origine, d’où sortent à moitié une femme enceinte et un morceau de sucre. Icônes de l’application, de l’écran de bienvenue et de l’en-tête du PDF mises à jour.
 - **1.2.1** — Saisie : la fenêtre reste entièrement visible au-dessus du clavier sur iPhone et Android (mesure de la zone visible, bouton « Enregistrer » fixé au-dessus du clavier, affichage compact, choix du moment sur une seule ligne). Installation : nouvel identifiant d’installation, nom « LeSacADiabetGesta » sous l’icône, icônes PNG uniquement (dont icône adaptative 192 px), bouton « Installer », page d’aide et de dépannage, restauration d’une sauvegarde dès l’écran de bienvenue, mises à jour appliquées automatiquement.
 - **1.0.0** — Première version.
 

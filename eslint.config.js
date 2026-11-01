@@ -10,7 +10,7 @@ export default [
         window: 'readonly', document: 'readonly', navigator: 'readonly', location: 'readonly', history: 'readonly',
         localStorage: 'readonly', crypto: 'readonly', Intl: 'readonly', URL: 'readonly', Blob: 'readonly', File: 'readonly',
         requestAnimationFrame: 'readonly', setTimeout: 'readonly', clearTimeout: 'readonly', setInterval: 'readonly', clearInterval: 'readonly',
-        console: 'readonly', process: 'readonly', self: 'readonly', caches: 'readonly', fetch: 'readonly', Request: 'readonly', Response: 'readonly', EventTarget: 'readonly', Event: 'readonly', globalThis: 'readonly', matchMedia: 'readonly',
+        console: 'readonly', process: 'readonly', self: 'readonly', caches: 'readonly', fetch: 'readonly', Request: 'readonly', Response: 'readonly', EventTarget: 'readonly', Event: 'readonly', FileReader: 'readonly', globalThis: 'readonly', matchMedia: 'readonly',
       },
     },
     rules: {

@@ -1,6 +1,6 @@
 // Service worker : l'application fonctionne entièrement hors connexion.
 // Pensez à incrémenter VERSION à chaque mise à jour des fichiers.
-const VERSION = 'lsadg-v1.2.1';
+const VERSION = 'lsadg-v1.3.0';
 const ASSETS = [
   './',
   './index.html',
@@ -31,7 +31,7 @@ const ASSETS = [
   './js/views/onboarding.js',
   './js/views/profile.js',
   './vendor/jspdf/jspdf.umd.min.js',
-  './assets/icons/icon.svg',
+  './assets/icons/favicon-48.png',
   './assets/icons/icon-192.png',
   './assets/icons/icon-512.png',
   './assets/icons/icon-maskable-192.png',

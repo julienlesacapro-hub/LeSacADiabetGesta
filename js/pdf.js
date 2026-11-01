@@ -91,17 +91,28 @@ export function buildPdf(JsPDF, state, opts) {
   doc.rect(0, 0, PAGE.w, 36, 'F');
   fill(C.plumDark);
   doc.circle(PAGE.w - 10, -6, 34, 'F');
-  // Logo : goutte
-  fill(C.white);
-  doc.circle(21, 19.5, 5.2, 'F');
-  doc.triangle(21, 9.5, 16.2, 17.6, 25.8, 17.6, 'F');
-  fill(C.plum);
-  doc.circle(21, 19.5, 2, 'F');
+  // Logo de l'application (image PNG) ; à défaut, une goutte dessinée.
+  let tx = 31;
+  if (opts.logo) {
+    try {
+      doc.addImage(opts.logo, 'PNG', 12, 6, 24, 24);
+      tx = 41;
+    } catch {
+      opts = { ...opts, logo: null };
+    }
+  }
+  if (!opts.logo) {
+    fill(C.white);
+    doc.circle(21, 19.5, 5.2, 'F');
+    doc.triangle(21, 9.5, 16.2, 17.6, 25.8, 17.6, 'F');
+    fill(C.plum);
+    doc.circle(21, 19.5, 2, 'F');
+  }
   ink(C.white);
-  font('bold', 17);
-  text('Relevé d’autosurveillance glycémique', 31, 17);
+  font('bold', opts.logo ? 15 : 17);
+  text('Relevé d’autosurveillance glycémique', tx, 17);
   font('normal', 10);
-  text('Diabète gestationnel  •  LeSacADiabetGesta', 31, 24);
+  text('Diabète gestationnel  •  LeSacADiabetGesta', tx, 24);
   font('normal', 8.5);
   text(`Édité le ${formatDateShort(today)}`, PAGE.w - PAGE.m, 14, { align: 'right' });
   text(`Période : ${formatDateShort(opts.from)} au ${formatDateShort(opts.to)}`, PAGE.w - PAGE.m, 19.5, { align: 'right' });
@@ -433,7 +444,24 @@ export function loadJsPDF() {
   return loading;
 }
 
+/** Logo de l'application en data URL (null si indisponible : le PDF utilise alors une goutte). */
+async function loadLogo() {
+  try {
+    const res = await fetch('assets/icons/icon-512.png');
+    if (!res.ok) return null;
+    const blob = await res.blob();
+    return await new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = () => resolve(null);
+      reader.readAsDataURL(blob);
+    });
+  } catch {
+    return null;
+  }
+}
+
 export async function generatePdfBlob(state, opts) {
-  const JsPDF = await loadJsPDF();
-  return buildPdf(JsPDF, state, opts).output('blob');
+  const [JsPDF, logo] = await Promise.all([loadJsPDF(), loadLogo()]);
+  return buildPdf(JsPDF, state, { ...opts, logo }).output('blob');
 }

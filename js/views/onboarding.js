@@ -23,7 +23,7 @@ export function renderOnboarding(view) {
   const s = STEPS[step];
   if (s.id === 'welcome') {
     view.innerHTML = `<div class="onb view-enter">
-      <div class="brand"><img class="brand-logo" src="assets/icons/icon.svg" alt=""><div class="brand-name">LeSacADiabetGesta<small>Diabète gestationnel</small></div></div>
+      <div class="brand"><img class="brand-logo" src="assets/icons/icon-192.png" alt="" width="56" height="56"><div class="brand-name">LeSacADiabetGesta<small>Diabète gestationnel</small></div></div>
       <div class="onb-body">
         <h1 class="welcome-hero">Votre grossesse, en toute sérénité.</h1>
         <p class="muted">Un compagnon simple pour comprendre le diabète gestationnel, préparer le dépistage et suivre vos glycémies.</p>
