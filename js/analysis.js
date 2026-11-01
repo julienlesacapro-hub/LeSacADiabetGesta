@@ -1,4 +1,5 @@
 // Évaluation des glycémies, statistiques et repérage des tendances.
+// © 2026 LESACA Julien. Tous droits réservés.
 import { TARGETS, HYPO, VERY_HIGH, MOMENTS, MAIN_MOMENTS, momentById, REPEAT_RULE } from './guidelines.js';
 import { compareToThreshold, isUnit, makeThreshold, toMgdl } from './units.js';
 import { addDays, diffDays, tsDate, todayISO } from './dates.js';

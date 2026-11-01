@@ -1,4 +1,5 @@
 // Export CSV compatible Excel (France) : séparateur « ; », virgule décimale, UTF-8 avec BOM.
+// © 2026 LESACA Julien. Tous droits réservés.
 import { MOMENTS, MAIN_MOMENTS, TAGS, momentById } from './guidelines.js';
 import { evaluateReading, resolveTargets, sortReadings, dailyTable, STATUS_LABELS } from './analysis.js';
 import { UNITS, UNIT_INFO, formatNumber, fromMgdl, roundTo } from './units.js';

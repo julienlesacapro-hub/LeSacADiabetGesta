@@ -3,15 +3,28 @@
 // Les éléments ajoutés sont vectoriels ; le devant du sac est redessiné par-dessus
 // (copie détourée de l'image d'origine) pour qu'ils paraissent « dans » le sac.
 //
+// Le fond bleu d'origine est remplacé par le dégradé prune de l'application : le sac est
+// détouré automatiquement (calcul d'opacité pixel par pixel par rapport au fond).
+// Le groupe « femme + sucre » est centré horizontalement dans le sac.
+//
+// © 2026 LESACA Julien. Tous droits réservés.
+//
 // Usage : node tools/logo.mjs   (nécessite Playwright)
 import { createRequire } from 'node:module';
 import { readFile, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
+import { crc32 } from 'node:zlib';
+import { AUTHOR, COPYRIGHT } from '../js/version.js';
 
 const { chromium } = createRequire(import.meta.url)('playwright');
 const root = fileURLToPath(new URL('..', import.meta.url));
 const jpg = (await readFile(`${root}assets/logo/logo-source.jpg`)).toString('base64');
 const SRC = `data:image/jpeg;base64,${jpg}`;
+
+
+// Couleurs de l'application (voir css/app.css : --primary, --primary-strong).
+const APP_BG = { light: '#8a64a0', mid: '#6b4a7e', dark: '#4f3560' };
+const BAG_CENTER_X = 512; // axe du sac (languette, boucle)
 
 // Bord supérieur du devant du sac, mesuré sur l'image d'origine (x, y en px sur 1024).
 const RIM = [
@@ -109,18 +122,33 @@ function woman() {
 }
 
 /**
- * @param {{rounded?: boolean, scale?: number}} o
- *   rounded : coins transparents (icône « any ») ; sinon fond bleu jusqu'aux bords (masquable / iOS).
+ * @param {{rounded?: boolean, scale?: number, bag?: string, dx?: number}} o
+ *   rounded : coins transparents (icône « any ») ; sinon fond jusqu'aux bords (masquable / iOS).
  *   scale   : réduction du dessin dans le carré (zone de sécurité des icônes masquables).
+ *   bag     : image du sac détouré (PNG transparent) ; à défaut, l'image d'origine.
+ *   dx      : décalage horizontal du groupe femme + sucre (centrage dans le sac).
  */
-export function logoSVG({ rounded = true, scale = 1 } = {}) {
+export function logoSVG({ rounded = true, scale = 1, bag = SRC, dx = 0 } = {}) {
   const t = scale === 1 ? '' : ` transform="translate(${512 * (1 - scale)} ${512 * (1 - scale)}) scale(${scale})"`;
+  const g = `translate(${dx.toFixed(1)} 0)`;
   return `<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 1024 1024" width="1024" height="1024">
+  <title>LeSacADiabetGesta</title>
+  <desc>Logo de l’application LeSacADiabetGesta. ${COPYRIGHT}</desc>
+  <metadata>
+    <rdf:RDF xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#" xmlns:dc="http://purl.org/dc/elements/1.1/">
+      <rdf:Description dc:title="LeSacADiabetGesta" dc:creator="${AUTHOR}" dc:rights="${COPYRIGHT}"/>
+    </rdf:RDF>
+  </metadata>
   <defs>
-    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
-      <stop offset="0" stop-color="#1e406a"/>
-      <stop offset="1" stop-color="#132946"/>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="${APP_BG.light}"/>
+      <stop offset="0.55" stop-color="${APP_BG.mid}"/>
+      <stop offset="1" stop-color="${APP_BG.dark}"/>
     </linearGradient>
+    <radialGradient id="glow" cx="0.82" cy="0.1" r="0.5">
+      <stop offset="0" stop-color="#ffffff" stop-opacity="0.12"/>
+      <stop offset="1" stop-color="#ffffff" stop-opacity="0"/>
+    </radialGradient>
     <linearGradient id="inside" x1="0" y1="0" x2="0" y2="1">
       <stop offset="0" stop-color="#2a170c" stop-opacity="0"/>
       <stop offset="1" stop-color="#2a170c" stop-opacity="0.45"/>
@@ -128,8 +156,8 @@ export function logoSVG({ rounded = true, scale = 1 } = {}) {
     <clipPath id="src"><rect x="5" y="5" width="1014" height="1014" rx="217"/></clipPath>
     <clipPath id="front"><path d="${rimPath}"/></clipPath>
     <clipPath id="items">
-      <path d="${WOMAN.body}" transform="${WOMAN_T}"/><path d="${WOMAN.arm}" transform="${WOMAN_T}"/>
-      <path d="${CUBE_OUTLINE}" transform="${CUBE_T}"/>
+      <path d="${WOMAN.body}" transform="${g} ${WOMAN_T}"/><path d="${WOMAN.arm}" transform="${g} ${WOMAN_T}"/>
+      <path d="${CUBE_OUTLINE}" transform="${g} ${CUBE_T}"/>
     </clipPath>
     <clipPath id="icon"><rect width="1024" height="1024" rx="222"/></clipPath>
     <filter id="lift" x="-20%" y="-20%" width="140%" height="140%">
@@ -138,19 +166,130 @@ export function logoSVG({ rounded = true, scale = 1 } = {}) {
   </defs>
   <g${rounded ? ' clip-path="url(#icon)"' : ''}>
     <rect width="1024" height="1024" fill="url(#bg)"/>
+    <rect width="1024" height="1024" fill="url(#glow)"/>
     <g${t}>
-      <image href="${SRC}" width="1024" height="1024" clip-path="url(#src)"/>
-      <g filter="url(#lift)">
-        ${woman()}
-        ${sugarCube()}
+      <image href="${bag}" width="1024" height="1024" clip-path="url(#src)"/>
+      <g filter="url(#lift)" transform="${g}">
+        <g id="woman">${woman()}</g>
+        <g id="sugar">${sugarCube()}</g>
       </g>
       <!-- ombre de l'intérieur du sac sur la partie basse des éléments -->
-      <rect x="380" y="404" width="360" height="62" fill="url(#inside)" clip-path="url(#items)"/>
+      <rect x="280" y="404" width="480" height="62" fill="url(#inside)" clip-path="url(#items)"/>
       <!-- devant du sac redessiné par-dessus -->
-      <image href="${SRC}" width="1024" height="1024" clip-path="url(#front)"/>
+      <image href="${bag}" width="1024" height="1024" clip-path="url(#front)"/>
     </g>
   </g>
 </svg>`;
+}
+
+/**
+ * Détoure le sac : opacité de chaque pixel selon son écart à la couleur du fond bleu
+ * (estimée ligne par ligne), puis retrait de la teinte bleue sur les bords (décontamination).
+ * Calcul fait dans Chromium (canvas) ; renvoie un PNG transparent en data URL.
+ */
+async function extractBag(page) {
+  await page.setViewportSize({ width: 1024, height: 1024 });
+  await page.setContent('<html><body></body></html>');
+  return page.evaluate(async (src) => {
+    const img = new Image();
+    img.src = src;
+    await img.decode();
+    const W = 1024;
+    const cv = document.createElement('canvas');
+    cv.width = W; cv.height = W;
+    const ctx = cv.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+    const im = ctx.getImageData(0, 0, W, W);
+    const d = im.data;
+    const isNavy = (r, g, b) => b > 50 && b - r > 28 && b - g > 12;
+    // Couleur du fond par ligne (moyenne des pixels bleus), lissée et complétée.
+    const bg = new Array(W).fill(null);
+    for (let y = 0; y < W; y++) {
+      let n = 0, r = 0, g = 0, b = 0;
+      for (let x = 0; x < W; x++) {
+        const i = (y * W + x) * 4;
+        if (isNavy(d[i], d[i + 1], d[i + 2])) { n++; r += d[i]; g += d[i + 1]; b += d[i + 2]; }
+      }
+      if (n > 20) bg[y] = [r / n, g / n, b / n];
+    }
+    let last = bg.find(Boolean);
+    for (let y = 0; y < W; y++) { if (bg[y]) last = bg[y]; else bg[y] = last; }
+    // Pixels hors du carré arrondi d'origine (coins noirs et liseré) : transparents.
+    const inset = 14, rad = 222 - inset;
+    const inRound = (x, y) => {
+      const cx = Math.min(Math.max(x, inset + rad), W - inset - rad);
+      const cy = Math.min(Math.max(y, inset + rad), W - inset - rad);
+      return (x - cx) ** 2 + (y - cy) ** 2 <= rad * rad;
+    };
+    const T0 = 16, T1 = 58;
+    for (let y = 0; y < W; y++) {
+      const [br, bgc, bb] = bg[y];
+      for (let x = 0; x < W; x++) {
+        const i = (y * W + x) * 4;
+        if (!inRound(x, y)) { d[i + 3] = 0; continue; }
+        const r = d[i], g = d[i + 1], b = d[i + 2];
+        const dist = Math.hypot(r - br, g - bgc, b - bb);
+        let a = (dist - T0) / (T1 - T0);
+        a = a <= 0 ? 0 : a >= 1 ? 1 : a * a * (3 - 2 * a);
+        if (a > 0 && a < 1) {
+          d[i] = Math.max(0, Math.min(255, (r - (1 - a) * br) / a));
+          d[i + 1] = Math.max(0, Math.min(255, (g - (1 - a) * bgc) / a));
+          d[i + 2] = Math.max(0, Math.min(255, (b - (1 - a) * bb) / a));
+        }
+        d[i + 3] = Math.round(a * 255);
+      }
+    }
+    // Le trait de contour gris foncé du dessin d'origine (invisible sur le bleu nuit) est teinté
+    // en prune foncé, uniquement au bord du sac, pour s'accorder au nouveau fond.
+    const A = new Uint8Array(W * W);
+    for (let k = 0; k < W * W; k++) A[k] = d[k * 4 + 3];
+    for (let y = 3; y < W - 3; y++) {
+      for (let x = 3; x < W - 3; x++) {
+        const k = y * W + x;
+        const i = k * 4;
+        if (!A[k]) continue;
+        const r = d[i], g = d[i + 1], b = d[i + 2];
+        if (Math.max(r, g, b) > 100 || r - b > 18) continue; // seulement les gris / bleus sombres
+        let edge = false;
+        for (let dy = -3; dy <= 3 && !edge; dy++) {
+          for (let dx = -3; dx <= 3; dx++) if (A[k + dy * W + dx] < 128) { edge = true; break; }
+        }
+        if (!edge) continue;
+        const lum = 0.3 * r + 0.59 * g + 0.11 * b;
+        d[i] = Math.min(255, lum * 1.2);
+        d[i + 1] = Math.min(255, lum * 0.78);
+        d[i + 2] = Math.min(255, lum * 1.38);
+      }
+    }
+    ctx.putImageData(im, 0, 0);
+    return cv.toDataURL('image/png');
+  }, SRC);
+}
+
+/** Mesure le groupe femme + sucre et calcule le décalage qui le centre sur l'axe du sac. */
+async function centeringOffset(page, bag) {
+  await page.setViewportSize({ width: 1024, height: 1024 });
+  await page.setContent(`<html><body style="margin:0">${logoSVG({ bag, dx: 0 })}</body></html>`);
+  const box = await page.evaluate(() => {
+    const rects = [document.querySelector('#woman > g'), document.querySelector('#sugar > g')].map((e) => e.getBoundingClientRect());
+    return { left: Math.min(...rects.map((r) => r.left)), right: Math.max(...rects.map((r) => r.right)) };
+  });
+  return { dx: BAG_CENTER_X - (box.left + box.right) / 2, box };
+}
+
+/** Ajoute des métadonnées texte (auteur, droits) à un PNG. */
+async function tagPNG(file) {
+  const buf = await readFile(file);
+  const chunk = (key, value) => {
+    const data = Buffer.concat([Buffer.from(key, 'latin1'), Buffer.from([0]), Buffer.from(value, 'latin1')]);
+    const type = Buffer.from('tEXt', 'latin1');
+    const len = Buffer.alloc(4); len.writeUInt32BE(data.length);
+    const crc = Buffer.alloc(4); crc.writeUInt32BE(crc32(Buffer.concat([type, data])) >>> 0);
+    return Buffer.concat([len, type, data, crc]);
+  };
+  const ihdrEnd = 8 + 4 + 4 + 13 + 4; // signature + IHDR complet
+  const extra = Buffer.concat([chunk('Title', 'LeSacADiabetGesta'), chunk('Author', AUTHOR), chunk('Copyright', COPYRIGHT)]);
+  await writeFile(file, Buffer.concat([buf.subarray(0, ihdrEnd), extra, buf.subarray(ihdrEnd)]));
 }
 
 async function render(page, svg, size, file, { transparent = true } = {}) {
@@ -165,18 +304,26 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
   const browser = await chromium.launch();
   const page = await browser.newPage();
   const out = process.argv[2] || root;
-  const rounded = logoSVG({ rounded: true });
-  const full = logoSVG({ rounded: false });
-  const maskable = logoSVG({ rounded: false, scale: 0.84 });
+  const bag = await extractBag(page);
+  const { dx, box } = await centeringOffset(page, bag);
+  const rounded = logoSVG({ rounded: true, bag, dx });
+  const full = logoSVG({ rounded: false, bag, dx });
+  const maskable = logoSVG({ rounded: false, scale: 0.84, bag, dx });
   await writeFile(`${out}assets/logo/logo.svg`, rounded);
-  await render(page, rounded, 1024, `${out}assets/logo/logo-1024.png`);
-  await render(page, full, 1024, `${out}assets/logo/logo-1024-carre.png`, { transparent: false });
-  await render(page, rounded, 512, `${out}assets/icons/icon-512.png`);
-  await render(page, rounded, 192, `${out}assets/icons/icon-192.png`);
-  await render(page, rounded, 48, `${out}assets/icons/favicon-48.png`);
-  await render(page, maskable, 512, `${out}assets/icons/icon-maskable-512.png`, { transparent: false });
-  await render(page, maskable, 192, `${out}assets/icons/icon-maskable-192.png`, { transparent: false });
-  await render(page, full, 180, `${out}assets/icons/apple-touch-icon.png`, { transparent: false });
+  const outputs = [
+    [rounded, 1024, 'assets/logo/logo-1024.png', true],
+    [full, 1024, 'assets/logo/logo-1024-carre.png', false],
+    [rounded, 512, 'assets/icons/icon-512.png', true],
+    [rounded, 192, 'assets/icons/icon-192.png', true],
+    [rounded, 48, 'assets/icons/favicon-48.png', true],
+    [maskable, 512, 'assets/icons/icon-maskable-512.png', false],
+    [maskable, 192, 'assets/icons/icon-maskable-192.png', false],
+    [full, 180, 'assets/icons/apple-touch-icon.png', false],
+  ];
+  for (const [svg, size, file, transparent] of outputs) {
+    await render(page, svg, size, `${out}${file}`, { transparent });
+    await tagPNG(`${out}${file}`);
+  }
   await browser.close();
-  console.log('Logo et icônes générés');
+  console.log(`Logo et icônes générés (groupe femme + sucre : ${box.left.toFixed(0)}–${box.right.toFixed(0)} px avant centrage, décalage ${dx.toFixed(1)} px)`);
 }

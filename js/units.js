@@ -1,4 +1,5 @@
 // Unités de glycémie, conversions et saisie tolérante.
+// © 2026 LESACA Julien. Tous droits réservés.
 // Masse molaire du glucose : 180,156 g/mol → 1 mmol/L = 18,0156 mg/dL = 0,180156 g/L.
 
 export const MGDL_PER_MMOL = 18.0156;

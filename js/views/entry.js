@@ -1,4 +1,5 @@
 // Saisie rapide d'une glycémie (feuille modale).
+// © 2026 LESACA Julien. Tous droits réservés.
 import { getState, saveReading, deleteReading } from '../store.js';
 import { MOMENTS, TAGS, momentById } from '../guidelines.js';
 import { UNITS, UNIT_INFO, parseNumber, guessUnit, convert, formatValue, isPlausible, formatNumber } from '../units.js';

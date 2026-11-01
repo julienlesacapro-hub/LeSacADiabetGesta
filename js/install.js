@@ -1,4 +1,5 @@
 // Installation de l'application sur l'écran d'accueil (PWA).
+// © 2026 LESACA Julien. Tous droits réservés.
 import { toast } from './ui.js';
 
 let deferredPrompt = null;

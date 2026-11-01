@@ -1,4 +1,5 @@
 // Parcours de bout en bout dans Chromium (format smartphone) : onboarding, saisie, carnet, courbes,
+// © 2026 LESACA Julien. Tous droits réservés.
 // informations, exports CSV et PDF. Usage : node tools/e2e.mjs [dossier-captures]
 import { createRequire } from 'node:module';
 import { mkdir, writeFile } from 'node:fs/promises';

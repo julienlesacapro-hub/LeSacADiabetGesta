@@ -1,4 +1,5 @@
 // Carnet : tableau jour × moment, courbes avec objectifs et liste détaillée.
+// © 2026 LESACA Julien. Tous droits réservés.
 import { getState } from '../store.js';
 import { MAIN_MOMENTS, momentById, TAGS, HYPO } from '../guidelines.js';
 import { computeStats, dailyTable, evaluateReading, readingsBetween, resolveTargets, sortReadings, STATUS_LABELS } from '../analysis.js';

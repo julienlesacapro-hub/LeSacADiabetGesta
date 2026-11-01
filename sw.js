@@ -1,6 +1,7 @@
 // Service worker : l'application fonctionne entièrement hors connexion.
+// © 2026 LESACA Julien. Tous droits réservés.
 // Pensez à incrémenter VERSION à chaque mise à jour des fichiers.
-const VERSION = 'lsadg-v1.3.0';
+const VERSION = 'lsadg-v1.3.1';
 const ASSETS = [
   './',
   './index.html',

@@ -1,4 +1,5 @@
 // Partage du suivi : PDF visuel et fichiers CSV pour Excel.
+// © 2026 LESACA Julien. Tous droits réservés.
 import { getState } from '../store.js';
 import { readingsBetween } from '../analysis.js';
 import { readingsCsv, dailyCsv, csvBlob } from '../csv.js';

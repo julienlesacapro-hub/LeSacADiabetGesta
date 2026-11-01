@@ -96,13 +96,19 @@ Ils sont signalés comme tels dans l’interface et paramétrables dans `js/guid
 ## Logo
 
 - `assets/logo/logo-source.jpg` : logo d’origine fourni par le propriétaire de l’application.
-- `tools/logo.mjs` : ajoute, en dessin vectoriel, une femme enceinte et un morceau de sucre qui sortent à moitié du sac ; le devant du sac (copie détourée de l’image d’origine) est redessiné par-dessus pour donner l’effet « dans le sac ». Le script produit :
+- `tools/logo.mjs` :
+  - détoure automatiquement le sac de son fond bleu d’origine et le pose sur le dégradé prune de l’application (le trait de contour sombre du dessin est teinté en prune foncé) ;
+  - ajoute, en dessin vectoriel, une femme enceinte et un morceau de sucre qui sortent à moitié du sac, le groupe étant centré automatiquement sur l’axe du sac ; le devant du sac est redessiné par-dessus pour l’effet « dans le sac » ;
+  - inscrit l’auteur et la mention de droits dans les métadonnées des fichiers (SVG et PNG).
+
+  Le script produit :
   - `assets/logo/logo.svg` et `logo-1024.png` (coins arrondis transparents), `logo-1024-carre.png` (fond bleu jusqu’aux bords) ;
   - les icônes `assets/icons/` : 192 et 512 px (« any »), versions adaptatives 192 et 512 px (dessin réduit à 84 % pour rester dans la zone de sécurité des masques ronds d’Android), `apple-touch-icon.png` (180 px, sans transparence, iOS arrondissant lui-même les coins) et `favicon-48.png`.
 - Sur un téléphone où l’application est déjà installée, la nouvelle icône apparaît après la mise à jour automatique sur Android ; sur iPhone, il faut supprimer l’icône puis l’ajouter de nouveau à l’écran d’accueil.
 
 ## Historique des versions
 
+- **1.3.1** — Logo aux couleurs de l’application (fond prune), femme enceinte et sucre centrés dans le sac. Mentions d’auteur « © 2026 LESACA Julien. Tous droits réservés. » : écran de bienvenue, Profil, page Sources, pied de page du PDF, métadonnées du logo, du PDF et de la page, fichier LICENSE.
 - **1.3.0** — Nouveau logo : le sac LeSacADiabetGesta d’origine, d’où sortent à moitié une femme enceinte et un morceau de sucre. Icônes de l’application, de l’écran de bienvenue et de l’en-tête du PDF mises à jour.
 - **1.2.1** — Saisie : la fenêtre reste entièrement visible au-dessus du clavier sur iPhone et Android (mesure de la zone visible, bouton « Enregistrer » fixé au-dessus du clavier, affichage compact, choix du moment sur une seule ligne). Installation : nouvel identifiant d’installation, nom « LeSacADiabetGesta » sous l’icône, icônes PNG uniquement (dont icône adaptative 192 px), bouton « Installer », page d’aide et de dépannage, restauration d’une sauvegarde dès l’écran de bienvenue, mises à jour appliquées automatiquement.
 - **1.0.0** — Première version.
@@ -114,3 +120,9 @@ Ils sont signalés comme tels dans l’interface et paramétrables dans `js/guid
 - Les recommandations françaises de référence datent de 2010 ; le contenu médical doit être relu et validé par un professionnel avant usage clinique, et mis à jour en cas de nouvelles recommandations.
 - **Confidentialité** : aucune donnée ne quitte le téléphone sans action de l’utilisatrice (partage d’un fichier). Pas de serveur, pas de compte, pas de traceur.
 - **Rappels** : les notifications programmées ne sont pas disponibles sans serveur pour une PWA ; elles ne sont pas implémentées.
+
+## Droits d’auteur
+
+© 2026 LESACA Julien. Tous droits réservés.
+
+Le code source, les textes, le logo et les illustrations de LeSacADiabetGesta sont la propriété de LESACA Julien ; toute reproduction ou diffusion sans autorisation écrite est interdite (voir `LICENSE`). Composant tiers : jsPDF 4.2.1, licence MIT (`vendor/jspdf/LICENSE`).

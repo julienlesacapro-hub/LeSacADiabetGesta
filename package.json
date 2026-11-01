@@ -1,8 +1,9 @@
 {
   "name": "lesacadiabetgesta",
-  "version": "1.3.0",
+  "version": "1.3.1",
   "private": true,
   "description": "Application mobile (PWA) d'accompagnement du diabète gestationnel : informations, dépistage, carnet glycémique, exports CSV et PDF.",
+  "author": "LESACA Julien",
   "type": "module",
   "scripts": {
     "start": "node tools/serve.mjs",

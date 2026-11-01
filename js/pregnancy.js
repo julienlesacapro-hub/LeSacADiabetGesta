@@ -1,4 +1,5 @@
 // Calculs liés à la grossesse : âge gestationnel, terme, IMC, prise de poids.
+// © 2026 LESACA Julien. Tous droits réservés.
 import { addDays, diffDays, isISODate, todayISO, ageFromBirthDate } from './dates.js';
 import { WEIGHT_GAIN, OGTT_WINDOW } from './guidelines.js';
 

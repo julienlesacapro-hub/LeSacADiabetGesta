@@ -1,11 +1,12 @@
 // Profil : informations pré-requises (grossesse, mensurations, antécédents, diagnostic), préférences et données.
+// © 2026 LESACA Julien. Tous droits réservés.
 import { getState, setProfile, exportBackup, importBackup, resetAll, deleteTest } from '../store.js';
 import { RISK_FACTORS, OTHER_FACTORS, STATUSES, TREATMENTS, TARGETS } from '../guidelines.js';
 import { pregnancyInfo, formatGA, bmi, bmiCategory, maternalAge } from '../pregnancy.js';
 import { UNITS, UNIT_INFO, parseNumber, formatNumber, formatValue, isUnit, makeThreshold } from '../units.js';
 import { formatDateShort, todayISO } from '../dates.js';
 import { esc, icon, toast, confirmDialog, downloadBlob } from '../ui.js';
-import { APP_VERSION } from '../version.js';
+import { APP_VERSION, COPYRIGHT } from '../version.js';
 import { isStandalone } from '../install.js';
 
 
@@ -199,7 +200,7 @@ export function renderProfile(view) {
     <section class="card settings-group">
       <a class="setting" href="#/installer"><span class="s-ico">${icon('download', { size: 20 })}</span><span class="s-text"><strong>${isStandalone() ? 'Application installée' : 'Installer l’application'}</strong><span>${isStandalone() ? 'Aide et dépannage' : 'Sur l’écran d’accueil du téléphone, utilisable hors connexion'}</span></span>${icon('chevronRight', { size: 18 })}</a>
       <a class="setting" href="#/comprendre/sources"><span class="s-ico">${icon('book', { size: 20 })}</span><span class="s-text"><strong>Sources, limites et confidentialité</strong><span>Références médicales utilisées</span></span>${icon('chevronRight', { size: 18 })}</a>
-      <div class="setting"><span class="s-ico">${icon('shield', { size: 20 })}</span><span class="s-text"><strong>LeSacADiabetGesta ${APP_VERSION}</strong><span>Outil d’information et de suivi personnel. Ne remplace pas un avis médical.</span></span></div>
+      <div class="setting"><span class="s-ico">${icon('shield', { size: 20 })}</span><span class="s-text"><strong>LeSacADiabetGesta ${APP_VERSION}</strong><span>Outil d’information et de suivi personnel. Ne remplace pas un avis médical.</span><span class="copyright">${COPYRIGHT}</span></span></div>
     </section>`;
 
   const form = view.querySelector('[data-profile]');

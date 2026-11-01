@@ -1,4 +1,5 @@
 // Petit serveur statique pour le développement : node tools/serve.mjs [port]
+// © 2026 LESACA Julien. Tous droits réservés.
 import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import { extname, join, normalize, resolve } from 'node:path';

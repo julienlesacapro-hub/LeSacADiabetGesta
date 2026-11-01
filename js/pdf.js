@@ -1,4 +1,5 @@
 // Rapport PDF (A4) : synthèse, statistiques, courbes vectorielles et carnet détaillé.
+// © 2026 LESACA Julien. Tous droits réservés.
 // buildPdf() ne dépend pas du DOM : il reçoit le constructeur jsPDF en paramètre.
 import { MAIN_MOMENTS, STATUSES, TREATMENTS, REFS, HYPO, momentById, TAGS } from './guidelines.js';
 import { computeStats, dailyTable, evaluateReading, readingsBetween, resolveTargets, sortReadings } from './analysis.js';
@@ -6,6 +7,7 @@ import { chartModel, yDomain } from './chart.js';
 import { pregnancyInfo, gestationalAgeAt, formatGA, bmi, maternalAge } from './pregnancy.js';
 import { fromMgdl, formatNumber, formatValue, roundTo, UNIT_INFO, MGDL_PER_MMOL } from './units.js';
 import { daysBetween, formatDateShort, formatDayCompact, formatTime, todayISO } from './dates.js';
+import { APP_VERSION, AUTHOR, COPYRIGHT } from './version.js';
 
 const C = {
   plum: [107, 74, 126],
@@ -68,6 +70,8 @@ export function buildPdf(JsPDF, state, opts) {
     title: 'Relevé d’autosurveillance glycémique',
     subject: 'Diabète gestationnel — LeSacADiabetGesta',
     creator: 'LeSacADiabetGesta',
+    author: AUTHOR,
+    keywords: COPYRIGHT,
   });
 
   const fill = (c) => doc.setFillColor(...c);
@@ -422,7 +426,10 @@ export function buildPdf(JsPDF, state, opts) {
     draw(C.border); doc.setLineWidth(0.3);
     doc.line(PAGE.m, PAGE.h - 12, PAGE.w - PAGE.m, PAGE.h - 12);
     font('normal', 7); ink(C.text3);
-    text('Document établi à partir des données saisies par la patiente dans LeSacADiabetGesta. Ne remplace pas un avis médical.', PAGE.m, PAGE.h - 7.5);
+    text('Document établi à partir des données saisies par la patiente dans LeSacADiabetGesta. Ne remplace pas un avis médical.', PAGE.m, PAGE.h - 8);
+    font('normal', 6.5);
+    text(`LeSacADiabetGesta ${APP_VERSION} — ${COPYRIGHT}`, PAGE.m, PAGE.h - 4.8);
+    font('normal', 7);
     text(`Page ${i} / ${total}`, PAGE.w - PAGE.m, PAGE.h - 7.5, { align: 'right' });
   }
   return doc;
